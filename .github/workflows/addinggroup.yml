@@ -1,0 +1,28 @@
+on:
+  repository_dispatch:
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Echo Key
+        env:
+          KEY: ${{ github.event.client_payload.key }}
+          FIRSTNAME: ${{ github.event.client_payload.firstname }}
+          LASTNAME: ${{ github.event.client_payload.lastname }}
+          JOBTITLE: ${{ github.event.client_payload.title }}
+        run: |
+          echo $JOBTITLE
+          CLIENT_ID=${{ vars.CLIENT_ID }}
+          CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
+          
+          TOKEN=$(curl -X POST \
+          -H "Host: login.microsoftonline.com" \
+          -H "Content-type: application/x-www-form-urlencoded" \
+          https://login.microsoftonline.com/0496c0c5-5b34-4de0-a252-686f82ec384f/oauth2/v2.0/token \
+          -d "client_id=$CLIENT_ID&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default&client_secret=$CLIENT_SECRET&grant_type=client_credentials" \
+          | jq -r .access_token)
+
+          echo "Got the token"
+          echo "User is "
